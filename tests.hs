@@ -70,9 +70,18 @@ testsCantidadPrendidas = TestList -- TODO: AGREGAR
 
 testsCajasDeCircuito :: Test
 testsCajasDeCircuito = TestList -- TODO: AGREGAR
-  [ "La lista de cajas de un circuito con una única caja es la lista con esa caja"
+  [ "La lista de cajas de un circuito con una única caja on es la lista con esa caja"
     ~: cajasDeCircuito cajaOn
     ~?= [on]
+  ,"La lista de cajas de un circuito con una única caja off es la lista con esa caja"
+    ~: cajasDeCircuito cajaOff
+    ~?= [off]
+  , "La lista de cajas de un circuito con una única caja Nada es la lista con esa caja"
+    ~: cajasDeCircuito cajaNada
+    ~?= [Nada]
+  , "Lista de cajas del ej"
+  ~: cajasDeCircuito (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
+    ~?= [on, off, Nada, on, on, Nada, on, off, Nada, on, on]
   ]
 
 testsEsCircuitoProlijo :: Test
@@ -80,6 +89,12 @@ testsEsCircuitoProlijo = TestList -- TODO: AGREGAR
   [ "Una caja es prolija"
     ~: esCircuitoProlijo cajaOn
     ~?= True
+  , "Ciruito prolijo"
+  ~: esCircuitoProlijo (Serie(Serie cajaOn cajaOff) cajaOn)
+  ~?= True
+  , "Ciruito no prolijo"
+  ~: esCircuitoProlijo (Serie cajaOn (Serie cajaOff cajaOn))
+  ~?= False
   ]
 
 -- NOTA: para correr este test, cambiar la línea 18 del archivo tp1.hs de "show = showDeCircuito" a
@@ -95,6 +110,15 @@ testsCircuitoEmprolijado = TestList -- TODO: AGREGAR
 testsTienenLaMismaEstructura :: Test
 testsTienenLaMismaEstructura = TestList -- TODO: AGREGAR
   [
+    "pruebita"
+    ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Serie cajaOn cajaOff) cajaOn)
+    ~?= True
+  , "pruebita false"
+    ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
+    ~?= False
+  , "difs cajas"
+    ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Serie cajaOn cajaOff) cajaOff)
+    ~?= True
     
   ]
 
@@ -109,10 +133,10 @@ tests = TestList
   [ TestLabel "invertido"                testsInvertido
   , TestLabel "hayCaminoIluminado"       testsHayCaminoIluminado
   , TestLabel "cantidadPrendidas"        testsCantidadPrendidas
-  --, TestLabel "cajasDeCircuito"          testsCajasDeCircuito
-  --, TestLabel "esCircuitoProlijo"        testsEsCircuitoProlijo
+  , TestLabel "cajasDeCircuito"          testsCajasDeCircuito
+  , TestLabel "esCircuitoProlijo"        testsEsCircuitoProlijo
   --, TestLabel "circuitoEmprolijado"      testsCircuitoEmprolijado
-  --, TestLabel "tienenLaMismaEstructura"  testsTienenLaMismaEstructura
+  , TestLabel "tienenLaMismaEstructura"  testsTienenLaMismaEstructura
   --, TestLabel "subCircuitoMásResistente" testsSubCircuitoMásResistente
   ]
 

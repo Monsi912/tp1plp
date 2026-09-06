@@ -21,11 +21,11 @@ showDeCircuito :: Circuito -> String
 showDeCircuito (Caja caja) = showDeCaja caja
 showDeCircuito (Serie circuitoInicial circuitoFinal) =
   (showDeCircuito circuitoInicial) ++ "-" ++ (showDeCircuito circuitoFinal)
-showDeCircuito (Paralelo cajaEntrada circuitoIzquierdo circuitoDerecho cajaSalida) =
-  (showDeCaja cajaEntrada) ++
+showDeCircuito (Paralelo caEnt circuitoIzquierdo circuitoDerecho caSal) =
+  (showDeCaja caEnt) ++
   "{" ++ (showDeCircuito circuitoIzquierdo) ++ "}" ++
   "{" ++ (showDeCircuito circuitoDerecho) ++ "}" ++
-  (showDeCaja cajaSalida)
+  (showDeCaja caSal)
 
 showDeCircuitoConEstructura :: Circuito -> String
 showDeCircuitoConEstructura (Caja caja) = showDeCaja caja
@@ -33,11 +33,11 @@ showDeCircuitoConEstructura (Serie circuitoInicial circuitoFinal) = "(" ++
   (showDeCircuitoConEstructura circuitoInicial) ++
     "-" ++
   (showDeCircuitoConEstructura circuitoFinal) ++ ")"
-showDeCircuitoConEstructura (Paralelo cajaEntrada circuitoIzquierdo circuitoDerecho cajaSalida) =
-  (showDeCaja cajaEntrada) ++
+showDeCircuitoConEstructura (Paralelo caEnt circuitoIzquierdo circuitoDerecho caSal) =
+  (showDeCaja caEnt) ++
   "{" ++ (showDeCircuitoConEstructura circuitoIzquierdo) ++ "}" ++
   "{" ++ (showDeCircuitoConEstructura circuitoDerecho) ++ "}" ++
-  (showDeCaja cajaSalida)
+  (showDeCaja caSal)
 
 on  = Bombilla True
 off = Bombilla False
@@ -48,17 +48,29 @@ cajaNada = Caja Nada
 
 -- 1: recCircuito
 
-recCircuito :: (Caja -> b) -> (Circuito -> b -> Circuito -> b -> b) -> (Caja -> Circuito -> b -> Circuito -> b -> Caja -> b) -> Circuito -> b
-recCircuito f1 f2 f3 (Caja caja) = f1 caja
-recCircuito f1 f2 f3 (Serie circuitoIzq circuitoDer) = f2 circuitoIzq (recCircuito f1 f2 f3 circuitoIzq) circuitoDer (recCircuito f1 f2 f3 circuitoDer)
-recCircuito f1 f2 f3 (Paralelo cajaEntrada circuitoIzq circuitoDer cajaSalida) = f3 cajaEntrada circuitoIzq (recCircuito f1 f2 f3 circuitoIzq) circuitoDer (recCircuito f1 f2 f3 circuitoDer) cajaSalida
+recCircuito :: 
+  (Caja -> b) -> 
+  (Circuito -> b -> Circuito -> b -> b) -> 
+  (Caja -> Circuito -> b -> Circuito -> b -> Caja -> b) -> 
+  Circuito -> 
+  b
+  
+recCircuito fC fS fP (Caja caja) = fC caja
+recCircuito fC fS fP (Serie ctIzq ctDer) = fS ctIzq (recCircuito fC fS fP ctIzq) ctDer (recCircuito fC fS fP ctDer)
+recCircuito fC fS fP (Paralelo caEnt ctIzq ctDer caSal) = fP caEnt ctIzq (recCircuito fC fS fP ctIzq) ctDer (recCircuito fC fS fP ctDer) caSal
 
 -- 2: foldCircuito
 
-foldCircuito :: (Caja -> b) -> (b -> b -> b) -> (Caja -> b -> b -> Caja -> b) -> Circuito -> b
-foldCircuito f1 f2 f3 = recCircuito f1
-                                    (\circuitoIzq resIzq circuitoDer resDer -> f2 resIzq resDer)
-                                    (\cajaEntrada circuitoIzq resIzq circuitoDer resDer cajaSalida -> f3 cajaEntrada resIzq resDer cajaSalida)
+foldCircuito :: 
+  (Caja -> b) -> 
+  (b -> b -> b) -> 
+  (Caja -> b -> b -> Caja -> b) -> 
+  Circuito -> 
+  b
+  
+foldCircuito fC fS fP = recCircuito fC
+                                    (\ctIzq resIzq ctDer resDer -> fS resIzq resDer)
+                                    (\caEnt ctIzq resIzq ctDer resDer caSal -> fP caEnt resIzq resDer caSal)
 
 -- 3 invertido
 
@@ -69,10 +81,10 @@ invertirCaja :: Caja -> Circuito
 invertirCaja caja = Caja caja
 
 invertirSerie :: Circuito -> Circuito -> Circuito
-invertirSerie circuitoIzq circuitoDer = Serie circuitoDer circuitoIzq
+invertirSerie ctIzq ctDer = Serie ctDer ctIzq
 
 invertirParalelo :: Caja -> Circuito -> Circuito -> Caja -> Circuito
-invertirParalelo cajaEntrada circuitoIzq circuitoDer cajaSalida = Paralelo cajaSalida circuitoDer circuitoIzq cajaEntrada
+invertirParalelo caEnt ctIzq ctDer caSal = Paralelo caSal ctDer ctIzq caEnt
 
 -- 4: hayCaminoIluminado
 
@@ -84,10 +96,10 @@ iluminadoCaja (Bombilla b) = b
 iluminadoCaja Nada = False
 
 iluminadoSerie :: Bool -> Bool -> Bool
-iluminadoSerie circuitoIzq circuitoDer = circuitoIzq && circuitoDer
+iluminadoSerie ctIzq ctDer = ctIzq && ctDer
 
 iluminadoParalelo :: Caja -> Bool -> Bool -> Caja -> Bool
-iluminadoParalelo cajaEntrada circuitoIzq circuitoDer cajaSalida = (iluminadoCaja cajaEntrada && iluminadoCaja cajaSalida) && (circuitoIzq || circuitoDer)
+iluminadoParalelo caEnt ctIzq ctDer caSal = (iluminadoCaja caEnt && iluminadoCaja caSal) && (ctIzq || ctDer)
 
 -- 5: cantidadPrendidas
 
@@ -99,30 +111,75 @@ prendidasCaja (Bombilla b) = if b then 1 else 0
 prendidasCaja Nada = 0
 
 prendidasSerie :: Int -> Int -> Int
-prendidasSerie circuitoIzq circuitoDer = circuitoIzq + circuitoDer
+prendidasSerie ctIzq ctDer = ctIzq + ctDer
 
 prendidasParalelo :: Caja -> Int -> Int -> Caja -> Int
-prendidasParalelo cajaEntrada circuitoIzq circuitoDer cajaSalida = (prendidasCaja cajaEntrada) + circuitoDer + circuitoIzq + (prendidasCaja cajaSalida)
+prendidasParalelo caEnt ctIzq ctDer caSal = (prendidasCaja caEnt) + ctDer + ctIzq + (prendidasCaja caSal)
 
 -- 6: cajasDeCircuito
 
-cajasDeCircuito = undefined -- TODO: COMPLETAR
+cajasDeCircuito :: Circuito -> [Caja]
+cajasDeCircuito circuito = foldCircuito listaCaja listaSerie listaParalelo circuito
+
+listaCaja :: Caja -> [Caja]
+listaCaja caja = [caja]
+
+listaSerie :: [Caja] -> [Caja] -> [Caja]
+listaSerie cajasIzq cajasDer = cajasIzq ++ cajasDer
+
+listaParalelo :: Caja -> [Caja] -> [Caja] -> Caja -> [Caja]
+listaParalelo caEnt cajasIzq cajasDer caSal = [caEnt] ++ cajasIzq ++ cajasDer ++ [caSal]
 
 -- 7: esCircuitoProlijo
 
-esCircuitoProlijo = undefined -- TODO: COMPLETAR
+esCircuitoProlijo :: Circuito -> Bool
+esCircuitoProlijo circuito = recCircuito (\caja -> True) esProlijoSerie esProlijoParalelo circuito
 
--- 8: circuitoEmprolijado
+esSerie :: Circuito -> Bool
+esSerie (Serie _ _) = True
+esSerie _ = False
 
-circuitoEmprolijado = undefined -- TODO: COMPLETAR
+{--
+esProlijoSerie ::  (Bool, Bool) -> (Bool, Bool) -> (Bool, Bool)
+esProlijoSerie (prolijidadIzq, _) (prolijidadDer, esSerieDer) = (prolijidadIzq && prolijidadDer && not esSerieDer, True)
+--}
+
+esProlijoSerie ::  Circuito -> Bool -> Circuito -> Bool -> Bool
+esProlijoSerie _ resIzq ramaDer resDer = resIzq && resDer && not (esSerie ramaDer)
+
+esProlijoParalelo :: Caja -> Circuito -> Bool -> Circuito -> Bool -> Caja -> Bool
+esProlijoParalelo _ _ resIzq _ resDer _ = resIzq && resDer
+
+-- 8: circuitoEmprolijado NO SE HACE
+
+circuitoEmprolijado = undefined
 
 -- 9: tienenLaMismaEstructura 
 
-tienenLaMismaEstructura = undefined -- TODO: COMPLETAR
+tienenLaMismaEstructura :: Circuito -> Circuito -> Bool
+tienenLaMismaEstructura c1 c2 = (cajasVacias c1) == (cajasVacias c2)
+
+cajasVacias :: Circuito -> Circuito
+cajasVacias circuito = foldCircuito (\_ -> cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada) circuito
 
 -- 10: subCircuitoMásResistente
 
-subCircuitoMásResistente = undefined -- TODO: COMPLETAR
+subCircuitoMásResistente :: Circuito -> Circuito
+subCircuitoMásResistente = recCircuito resCaja resSerie paraleloMasResitente circuito
+
+
+resistenciaCircuito :: Circuito -> Float
+resistenciaCircuito circuito = foldCircuito resCaja resSerie resParalelo circuito
+
+resCaja :: Caja -> Float
+resCaja cajaOn = 1
+resCaja _ = 0
+
+resSerie :: Float -> Float -> Float
+resSerie resIzq resDer = resIzq + resDer
+
+resParalelo :: Caja -> Float -> Float -> Caja -> Float
+resParalelo resCajaEnt resIzq resDer resCajaSal = resCajaEnt + resIzq + resDer + resCajaSal
 
 {-- 11: Demostrar: alternado . alternado = id
 

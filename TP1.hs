@@ -167,17 +167,7 @@ cajasVacias circuito =
 
 subCircuitoMásResistente :: Circuito -> Circuito
 subCircuitoMásResistente circuito = 
-  recCircuito id resSerie resParalelo circuito
-
-{--recCircuito :: 
-  (Caja -> b) -> 
-  (Circuito -> b -> Circuito -> b -> b) -> 
-  (Caja -> Circuito -> b -> Circuito -> b -> Caja -> b) -> 
-  Circuito -> 
-  b
-
-resCaja :: Caja -> Caja
-resCaja caja = caja--}
+  recCircuito Caja resSerie resParalelo circuito
 
 resSerie :: Circuito -> Circuito -> Circuito -> Circuito -> Circuito
 resSerie ramaIzq subRamaIzq ramaDer subRamaDer = 
@@ -189,8 +179,6 @@ resParalelo caEnt ramaIzq subRamaIzq ramaDer subRamaDer caSal =
 
 elDeMayorResistencia :: Circuito -> Circuito -> Circuito
 elDeMayorResistencia c1 c2 = if (resistenciaCircuito c1) >= (resistenciaCircuito c2) then c1 else c2
-
-
 
 {-- 11: Demostrar: alternado . alternado = id
 

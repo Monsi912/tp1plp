@@ -160,26 +160,37 @@ tienenLaMismaEstructura :: Circuito -> Circuito -> Bool
 tienenLaMismaEstructura c1 c2 = (cajasVacias c1) == (cajasVacias c2)
 
 cajasVacias :: Circuito -> Circuito
-cajasVacias circuito = foldCircuito (\_ -> cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada) circuito
+cajasVacias circuito = 
+  foldCircuito (\_ -> cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada) circuito
 
 -- 10: subCircuitoMásResistente
 
 subCircuitoMásResistente :: Circuito -> Circuito
-subCircuitoMásResistente = recCircuito resCaja resSerie paraleloMasResitente circuito
+subCircuitoMásResistente circuito = 
+  recCircuito id resSerie resParalelo circuito
+
+{--recCircuito :: 
+  (Caja -> b) -> 
+  (Circuito -> b -> Circuito -> b -> b) -> 
+  (Caja -> Circuito -> b -> Circuito -> b -> Caja -> b) -> 
+  Circuito -> 
+  b
+
+resCaja :: Caja -> Caja
+resCaja caja = caja--}
+
+resSerie :: Circuito -> Circuito -> Circuito -> Circuito -> Circuito
+resSerie ramaIzq subRamaIzq ramaDer subRamaDer = 
+  elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Serie ramaIzq ramaDer) 
+
+resParalelo :: Caja -> Circuito -> Circuito -> Circuito -> Circuito -> Caja -> Circuito
+resParalelo caEnt ramaIzq subRamaIzq ramaDer subRamaDer caSal = 
+  elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Paralelo caEnt ramaIzq ramaDer caSal) 
+
+elDeMayorResistencia :: Circuito -> Circuito -> Circuito
+elDeMayorResistencia c1 c2 = if (resistenciaCircuito c1) >= (resistenciaCircuito c2) then c1 else c2
 
 
-resistenciaCircuito :: Circuito -> Float
-resistenciaCircuito circuito = foldCircuito resCaja resSerie resParalelo circuito
-
-resCaja :: Caja -> Float
-resCaja cajaOn = 1
-resCaja _ = 0
-
-resSerie :: Float -> Float -> Float
-resSerie resIzq resDer = resIzq + resDer
-
-resParalelo :: Caja -> Float -> Float -> Caja -> Float
-resParalelo resCajaEnt resIzq resDer resCajaSal = resCajaEnt + resIzq + resDer + resCajaSal
 
 {-- 11: Demostrar: alternado . alternado = id
 

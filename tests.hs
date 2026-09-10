@@ -1,5 +1,6 @@
 import Test.HUnit
 import TP1
+import TP1 (subCircuitoMásResistente)
 
 -- TESTS
 
@@ -125,7 +126,17 @@ testsTienenLaMismaEstructura = TestList -- TODO: AGREGAR
 testsSubCircuitoMásResistente :: Test
 testsSubCircuitoMásResistente = TestList -- TODO: AGREGAR
   [
-    
+    "pruebita"
+    ~: subCircuitoMásResistente (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
+    ~?= Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn
+
+  , "pruebita 2"
+    ~: subCircuitoMásResistente (Serie(Paralelo off (Paralelo off cajaOn cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) off) cajaOff)
+    ~?= Paralelo off cajaOn cajaOn on
+
+  , "pruebita 3"
+    ~: subCircuitoMásResistente (Serie(Paralelo off (Paralelo off cajaOff cajaOff off) (Paralelo Nada cajaOff cajaOff Nada) off) cajaOn)
+    ~?= cajaOn
   ]
 
 tests :: Test
@@ -137,7 +148,7 @@ tests = TestList
   , TestLabel "esCircuitoProlijo"        testsEsCircuitoProlijo
   --, TestLabel "circuitoEmprolijado"      testsCircuitoEmprolijado
   , TestLabel "tienenLaMismaEstructura"  testsTienenLaMismaEstructura
-  --, TestLabel "subCircuitoMásResistente" testsSubCircuitoMásResistente
+  , TestLabel "subCircuitoMásResistente" testsSubCircuitoMásResistente
   ]
 
 main :: IO ()

@@ -75,65 +75,35 @@ foldCircuito fC fS fP = recCircuito fC
 -- 3 invertido
 
 invertido :: Circuito -> Circuito
-invertido circuito = foldCircuito invertirCaja invertirSerie invertirParalelo circuito
-
-invertirCaja :: Caja -> Circuito
-invertirCaja caja = Caja caja
-
-invertirSerie :: Circuito -> Circuito -> Circuito
-invertirSerie ctIzq ctDer = Serie ctDer ctIzq
-
-invertirParalelo :: Caja -> Circuito -> Circuito -> Caja -> Circuito
-invertirParalelo caEnt ctIzq ctDer caSal = Paralelo caSal ctDer ctIzq caEnt
+invertido = foldCircuito Caja (flip Serie) (\e i d s -> Paralelo s d i e)
 
 -- 4: hayCaminoIluminado
 
 hayCaminoIluminado :: Circuito -> Bool
-hayCaminoIluminado circuito = foldCircuito iluminadoCaja iluminadoSerie iluminadoParalelo circuito
+hayCaminoIluminado = foldCircuito iluminadoCaja (&&) (\e i d s -> (iluminadoCaja e && iluminadoCaja s) && (i || d))
 
 iluminadoCaja :: Caja -> Bool
 iluminadoCaja (Bombilla b) = b
 iluminadoCaja Nada = False
 
-iluminadoSerie :: Bool -> Bool -> Bool
-iluminadoSerie ctIzq ctDer = ctIzq && ctDer
-
-iluminadoParalelo :: Caja -> Bool -> Bool -> Caja -> Bool
-iluminadoParalelo caEnt ctIzq ctDer caSal = (iluminadoCaja caEnt && iluminadoCaja caSal) && (ctIzq || ctDer)
-
 -- 5: cantidadPrendidas
 
 cantidadPrendidas :: Circuito -> Int
-cantidadPrendidas circuito = foldCircuito prendidasCaja prendidasSerie prendidasParalelo circuito
+cantidadPrendidas = foldCircuito prendidasCaja (+) (\e i d s -> prendidasCaja e + d + i + prendidasCaja s)
 
 prendidasCaja :: Caja -> Int
 prendidasCaja (Bombilla b) = if b then 1 else 0
 prendidasCaja Nada = 0
 
-prendidasSerie :: Int -> Int -> Int
-prendidasSerie ctIzq ctDer = ctIzq + ctDer
-
-prendidasParalelo :: Caja -> Int -> Int -> Caja -> Int
-prendidasParalelo caEnt ctIzq ctDer caSal = (prendidasCaja caEnt) + ctDer + ctIzq + (prendidasCaja caSal)
-
 -- 6: cajasDeCircuito
 
 cajasDeCircuito :: Circuito -> [Caja]
-cajasDeCircuito circuito = foldCircuito listaCaja listaSerie listaParalelo circuito
-
-listaCaja :: Caja -> [Caja]
-listaCaja caja = [caja]
-
-listaSerie :: [Caja] -> [Caja] -> [Caja]
-listaSerie cajasIzq cajasDer = cajasIzq ++ cajasDer
-
-listaParalelo :: Caja -> [Caja] -> [Caja] -> Caja -> [Caja]
-listaParalelo caEnt cajasIzq cajasDer caSal = [caEnt] ++ cajasIzq ++ cajasDer ++ [caSal]
+cajasDeCircuito = foldCircuito (: []) (++) (\e i d s -> [e] ++ i ++ d ++ [s])
 
 -- 7: esCircuitoProlijo
 
 esCircuitoProlijo :: Circuito -> Bool
-esCircuitoProlijo circuito = recCircuito (\caja -> True) esProlijoSerie esProlijoParalelo circuito
+esCircuitoProlijo = recCircuito (const True) esProlijoSerie esProlijoParalelo
 
 esSerie :: Circuito -> Bool
 esSerie (Serie _ _) = True
@@ -157,17 +127,22 @@ circuitoEmprolijado = undefined
 -- 9: tienenLaMismaEstructura 
 
 tienenLaMismaEstructura :: Circuito -> Circuito -> Bool
-tienenLaMismaEstructura c1 c2 = (cajasVacias c1) == (cajasVacias c2)
+tienenLaMismaEstructura c1 c2 = cajasVacias c1 == cajasVacias c2
 
 cajasVacias :: Circuito -> Circuito
-cajasVacias circuito = 
-  foldCircuito (\_ -> cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada) circuito
+cajasVacias = 
+  foldCircuito (const cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada)
 
 -- 10: subCircuitoMásResistente
 
+resistenciaCircuito :: Circuito -> Float
+resistenciaCircuito (Caja Nada) = 0
+resistenciaCircuito (Caja (Bombilla b)) = if b then 1 else -1
+resistenciaCircuito (Serie cIzq cDer) = resistenciaCircuito cIzq + resistenciaCircuito cDer
+resistenciaCircuito (Paralelo cEnt cIzq cDer cSal) = resistenciaCircuito (Caja cEnt) + resistenciaCircuito cIzq + resistenciaCircuito cDer + resistenciaCircuito (Caja cSal)
+
 subCircuitoMásResistente :: Circuito -> Circuito
-subCircuitoMásResistente circuito = 
-  recCircuito Caja resSerie resParalelo circuito
+subCircuitoMásResistente = recCircuito Caja resSerie resParalelo
 
 resSerie :: Circuito -> Circuito -> Circuito -> Circuito -> Circuito
 resSerie ramaIzq subRamaIzq ramaDer subRamaDer = 
@@ -178,7 +153,7 @@ resParalelo caEnt ramaIzq subRamaIzq ramaDer subRamaDer caSal =
   elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Paralelo caEnt ramaIzq ramaDer caSal) 
 
 elDeMayorResistencia :: Circuito -> Circuito -> Circuito
-elDeMayorResistencia c1 c2 = if (resistenciaCircuito c1) >= (resistenciaCircuito c2) then c1 else c2
+elDeMayorResistencia c1 c2 = if resistenciaCircuito c1 >= resistenciaCircuito c2 then c1 else c2
 
 {-- 11: Demostrar: alternado . alternado = id
 

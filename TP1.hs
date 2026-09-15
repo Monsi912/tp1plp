@@ -1,4 +1,6 @@
 module TP1 where
+import Data.Functor.Classes (readPrec1)
+import Data.Foldable (Foldable(fold))
 
 data Caja = Bombilla Bool | Nada
               deriving Eq
@@ -127,11 +129,18 @@ circuitoEmprolijado = undefined
 -- 9: tienenLaMismaEstructura 
 
 tienenLaMismaEstructura :: Circuito -> Circuito -> Bool
-tienenLaMismaEstructura c1 c2 = cajasVacias c1 == cajasVacias c2
+tienenLaMismaEstructura = foldCircuito (const esCaja) (\rec1 rec2 c2 -> case c2 of
+                                                                         Caja c -> False
+                                                                         Serie c1' c2' -> rec1 c1' && rec2 c2'
+                                                                         Paralelo cEnt c1' c2' cSal -> False) 
+                                                      (\cEnt rec1 rec2 cSal c2 -> case c2 of
+                                                                                   Caja c -> False
+                                                                                   Serie c1' c2' -> False
+                                                                                   Paralelo cEnt' c1' c2' cSal' -> rec1 c1' && rec2 c2')
 
-cajasVacias :: Circuito -> Circuito
-cajasVacias = 
-  foldCircuito (const cajaNada) Serie (\_ ramaIzq ramaDer _ -> Paralelo Nada ramaIzq ramaDer Nada)
+esCaja :: Circuito -> Bool
+esCaja (Caja _) = True
+esCaja _ = False
 
 -- 10: subCircuitoMásResistente
 
@@ -178,5 +187,34 @@ not :: Bool -> Bool
 {NF} not False = True
 
 -- TODO: COMPLETAR
+
+Caso base (Caja c)
+Queremos ver que P(Caja c) es verdadero ∀c::Caja
+
+P(Caja c): alternado (Caja c) . alternado (Caja c) = id (Caja c)
+-- demo caso base
+
+Caso inductivo 1 (Serie c1 c2)
+
+HIc1 = c1::Circuito. P(c1): alternado (c1) . alternado (c1) = id (c1)
+HIc2 = c2::Circuito. P(c2): alternado (c2) . alternado (c2) = id (c2)
+
+Suponiendo que vale P(c1) y P(c2) probamos P(Serie c1 c2)
+Queremos ver que P(Serie c1 c2): alternado (Serie c1 c2) . alternado (Serie c1 c2) = id (Serie c1 c2) es verdadero
+
+alternado (Serie c1 c2) . alternado (Serie c1 c2)
+= 
+-- demo caso 1
+
+Luego alternado (Serie c1 c2) . alternado (Serie c1 c2) = id (Serie c1 c2) que es lo que queríamos probar.
+
+Caso inductivo 2 (Paralelo cEnt c1 c2 cSal)
+
+Suponiendo que vale P(c1), P(c2) y habiendo probado que vale P(Caja c) probamos P(Paralelo cEnt c1 c2 cSal)
+Queremos ver que P(Paralelo cEnt c1 c2 cSal): alternado (Paralelo cEnt c1 c2 cSal) . alternado (Paralelo cEnt c1 c2 cSal) = id (Paralelo cEnt c1 c2 cSal) es verdadero
+
+alternado (Serie c1 c2) . alternado (Serie c1 c2)
+= 
+-- demo caso 1
 
 --}

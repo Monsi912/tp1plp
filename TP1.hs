@@ -140,7 +140,7 @@ esCaja (Caja _) = True
 esCaja _ = False
 
 -- 10: subCircuitoMásResistente
-
+--Funcion resistencia circuito para testear
 resistenciaCircuito :: Circuito -> Float
 resistenciaCircuito (Caja Nada) = 0
 resistenciaCircuito (Caja (Bombilla b)) = if b then 1 else -1

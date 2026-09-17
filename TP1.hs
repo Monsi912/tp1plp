@@ -188,33 +188,85 @@ not :: Bool -> Bool
 
 -- TODO: COMPLETAR
 
+Lema {L1} - Para todo b. not (not b) = b
+
+Caso 1 : b = True
+not (not True)
+= {NT}  not False
+= {NF}  True
+
+Caso 2 : b = False
+not (not False)
+= {NF}  not True
+= {NT}  False
+
+Lema {L2} - cajaAlternada (cajaAlternada caja) = caja
+
+Caso 1 : caja = Nada
+cajaAlternada (cajaAlternada Nada) = Nada
+
+cajaAlternada (cajaAlternada Nada)
+= {CAN} cajaAlternada Nada
+= {CAN} Nada
+
+Caso 2 : caja = Bombilla b con b :: Bool
+cajaAlternada (cajaAlternada (Bombilla b)) = Bombilla b
+
+cajaAlternada (cajaAlternada b)
+= {CAB} cajaAlternada (Bombilla (not b))
+= {CAB} Bombilla (not (not b))
+= {L1}  Bombilla b
+
 Caso base (Caja c)
 Queremos ver que P(Caja c) es verdadero ∀c::Caja
 
-P(Caja c): alternado (Caja c) . alternado (Caja c) = id (Caja c)
--- demo caso base
+P(Caja c): (alternado . alternado) (Caja c) = id (Caja c)
+(alternado . alternado) (Caja c)
+= {C} alternado (alternado (Caja c))
+= {AC} alternado (Caja (cajaAlternada c))
+= {AC} Caja (cajaAlternada (cajaAlternada c))
+= {L2} Caja c = id (Caja c)
+= {I} Caja c = Caja c
+
+Luego, (alternado . alternado) (Caja c) = id (Caja c) como queríamos probar.
 
 Caso inductivo 1 (Serie c1 c2)
 
-HIc1 = c1::Circuito. P(c1): alternado (c1) . alternado (c1) = id (c1)
-HIc2 = c2::Circuito. P(c2): alternado (c2) . alternado (c2) = id (c2)
+HIc1 = c1::Circuito. P(c1): (alternado . alternado) (c1) ={C} alternado (alternado c1) = id (c1)
+HIc2 = c2::Circuito. P(c2): (alternado . alternado) (c2) ={C} alternado (alternado c2) = id (c2)
 
 Suponiendo que vale P(c1) y P(c2) probamos P(Serie c1 c2)
-Queremos ver que P(Serie c1 c2): alternado (Serie c1 c2) . alternado (Serie c1 c2) = id (Serie c1 c2) es verdadero
+Queremos ver que P(Serie c1 c2): (alternado . alternado) (Serie c1 c2) = id (Serie c1 c2) es verdadero
 
-alternado (Serie c1 c2) . alternado (Serie c1 c2)
-= 
--- demo caso 1
+{AS} alternado (Serie ci cf) = Serie (alternado ci) (alternado cf)
+(alternado . alternado) (Serie c1 c2)
+= {C} alternado (alternado (Serie c1 c2))
+= {AS} alternado (Serie (alternado c1) (alternado c2))
+= {AS} Serie (alternado (alternado c1)) (alternado (alternado c2))
+= {HIc1} Serie (id c1) (alternado (alternado c2))
+= {HIc2} Serie (id c1) (id c2)
+= {I} Serie c1 c2 = id (Serie c1 c2)
+= {I} Serie c1 c2 = Serie c1 c2
 
-Luego alternado (Serie c1 c2) . alternado (Serie c1 c2) = id (Serie c1 c2) que es lo que queríamos probar.
+Luego (alternado . alternado) (Serie c1 c2) = id (Serie c1 c2) que es lo que queríamos probar.
 
 Caso inductivo 2 (Paralelo cEnt c1 c2 cSal)
 
 Suponiendo que vale P(c1), P(c2) y habiendo probado que vale P(Caja c) probamos P(Paralelo cEnt c1 c2 cSal)
-Queremos ver que P(Paralelo cEnt c1 c2 cSal): alternado (Paralelo cEnt c1 c2 cSal) . alternado (Paralelo cEnt c1 c2 cSal) = id (Paralelo cEnt c1 c2 cSal) es verdadero
+Queremos ver que P(Paralelo cEnt c1 c2 cSal): (alternado . alternado) (Paralelo cEnt c1 c2 cSal) = id (Paralelo cEnt c1 c2 cSal) es verdadero
 
-alternado (Serie c1 c2) . alternado (Serie c1 c2)
-= 
--- demo caso 1
+(alternado . alternado) (Paralelo cEnt c1 c2 cSal)
+= {C} alternado (alternado (Paralelo cEnt c1 c2 cSal))
+= {AP} alternado (Paralelo (cajaAlternada cEnt) (alternado c1) (alternado c2) (cajaAlternada cSal))
+= {AP} Paralelo (cajaAlternada (cajaAlternada cEnt)) (alternado (alternado c1)) (alternado (alternado c2)) (cajaAlternada (cajaAlternada cSal))
+= {L2} Paralelo cEnt (alternado (alternado c1)) (alternado (alternado c2)) cSal
+= {HIc1} Paralelo cEnt (id c1) (alternado (alternado c2)) cSal
+= {HIc2} Paralelo cEnt (id c1) (id c2) cSal
+= {I} Paralelo cEnt c1 c2 cSal = id (Paralelo cEnt c1 c2 cSal)
+= {I} Paralelo cEnt c1 c2 cSal = Paralelo cEnt c1 c2 cSal
+
+Luego (alternado . alternado) (Paralelo cEnt c1 c2 cSal) = id (Paralelo cEnt c1 c2 cSal) que es lo que queríamos probar.
+
+Q.E.D para todos los casos que alternado . alternado = id
 
 --}

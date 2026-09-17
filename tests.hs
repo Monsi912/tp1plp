@@ -58,13 +58,13 @@ testsCantidadPrendidas = TestList -- TODO: AGREGAR
   , "Cantidad prendidas en serie de 2"
     ~: cantidadPrendidas (Serie cajaOn cajaOn)
     ~?= 2
-  , "Cantidad prendidas en serie de 2 con ubna apagada"
+  , "Cantidad prendidas en serie de 2 con una apagada"
     ~: cantidadPrendidas (Serie cajaOff cajaOn)
     ~?= 1
   , "Cantidad prendidas en paralelo"
     ~: cantidadPrendidas (Paralelo off cajaNada cajaOn on)
     ~?= 2
-  , "Cantidad prendidas circuito complejo"
+  , "Cantidad prendidas circuito completo"
     ~: cantidadPrendidas (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
     ~?= 6
   ]
@@ -80,7 +80,7 @@ testsCajasDeCircuito = TestList -- TODO: AGREGAR
   , "La lista de cajas de un circuito con una única caja Nada es la lista con esa caja"
     ~: cajasDeCircuito cajaNada
     ~?= [Nada]
-  , "Lista de cajas del ej"
+  , "Lista de cajas circuito completo"
   ~: cajasDeCircuito (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
     ~?= [on, off, Nada, on, on, Nada, on, off, Nada, on, on]
   ]
@@ -111,13 +111,13 @@ testsCircuitoEmprolijado = TestList -- TODO: AGREGAR
 testsTienenLaMismaEstructura :: Test
 testsTienenLaMismaEstructura = TestList -- TODO: AGREGAR
   [
-    "pruebita"
+    "Series con misma estructura"
     ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Serie cajaOn cajaOff) cajaOn)
     ~?= True
-  , "pruebita false"
+  , "Series con diferente estructura"
     ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
     ~?= False
-  , "difs cajas"
+  , "Serie con misma estructura y diferentes valores de caja"
     ~: tienenLaMismaEstructura (Serie(Serie cajaOn cajaOff) cajaOn) (Serie(Serie cajaOn cajaOff) cajaOff)
     ~?= True
     
@@ -126,15 +126,15 @@ testsTienenLaMismaEstructura = TestList -- TODO: AGREGAR
 testsSubCircuitoMásResistente :: Test
 testsSubCircuitoMásResistente = TestList -- TODO: AGREGAR
   [
-    "pruebita"
+    "Subcircuito Serie"
     ~: subCircuitoMásResistente (Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn)
     ~?= Serie(Paralelo on (Paralelo off cajaNada cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) on) cajaOn
 
-  , "pruebita 2"
+  , "Subcircuito paralelo"
     ~: subCircuitoMásResistente (Serie(Paralelo off (Paralelo off cajaOn cajaOn on) (Paralelo Nada cajaOn cajaOff Nada) off) cajaOff)
     ~?= Paralelo off cajaOn cajaOn on
 
-  , "pruebita 3"
+  , "Subcircuito caja"
     ~: subCircuitoMásResistente (Serie(Paralelo off (Paralelo off cajaOff cajaOff off) (Paralelo Nada cajaOff cajaOff Nada) off) cajaOn)
     ~?= cajaOn
   ]

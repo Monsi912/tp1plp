@@ -1,6 +1,4 @@
 module TP1 where
-import Data.Functor.Classes (readPrec1)
-import Data.Foldable (Foldable(fold))
 
 data Caja = Bombilla Bool | Nada
               deriving Eq
@@ -93,9 +91,13 @@ iluminadoCaja Nada = False
 cantidadPrendidas :: Circuito -> Int
 cantidadPrendidas = foldCircuito prendidasCaja (+) (\e i d s -> prendidasCaja e + d + i + prendidasCaja s)
 
+--prendidasCaja :: Caja -> Int
+--prendidasCaja (Bombilla b) = if b then 1 else 0
+--prendidasCaja Nada = 0
+
+-- Esta versión ahorra implementar de nuevo la decisión que ya hacía iluminadoCaja
 prendidasCaja :: Caja -> Int
-prendidasCaja (Bombilla b) = if b then 1 else 0
-prendidasCaja Nada = 0
+prendidasCaja caja = if iluminadoCaja caja then 1 else 0
 
 -- 6: cajasDeCircuito
 

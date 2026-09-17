@@ -1,6 +1,4 @@
 module TP1 where
-import Data.Functor.Classes (readPrec1)
-import Data.Foldable (Foldable(fold))
 
 data Caja = Bombilla Bool | Nada
               deriving Eq
@@ -58,8 +56,8 @@ recCircuito ::
   b
   
 recCircuito fC fS fP (Caja caja) = fC caja
-recCircuito fC fS fP (Serie ctIzq ctDer) = fS ctIzq (recCircuito fC fS fP ctIzq) ctDer (recCircuito fC fS fP ctDer)
-recCircuito fC fS fP (Paralelo caEnt ctIzq ctDer caSal) = fP caEnt ctIzq (recCircuito fC fS fP ctIzq) ctDer (recCircuito fC fS fP ctDer) caSal
+recCircuito fC fS fP (Serie circIzq circDer) = fS circIzq (recCircuito fC fS fP circIzq) circDer (recCircuito fC fS fP circDer)
+recCircuito fC fS fP (Paralelo caEnt circIzq circDer caSal) = fP caEnt circIzq (recCircuito fC fS fP circIzq) circDer (recCircuito fC fS fP circDer) caSal
 
 -- 2: foldCircuito
 
@@ -71,8 +69,8 @@ foldCircuito ::
   b
   
 foldCircuito fC fS fP = recCircuito fC
-                                    (\ctIzq resIzq ctDer resDer -> fS resIzq resDer)
-                                    (\caEnt ctIzq resIzq ctDer resDer caSal -> fP caEnt resIzq resDer caSal)
+                                    (\circIzq resIzq circDer resDer -> fS resIzq resDer)
+                                    (\caEnt circIzq resIzq circDer resDer caSal -> fP caEnt resIzq resDer caSal)
 
 -- 3 invertido
 
@@ -111,11 +109,6 @@ esSerie :: Circuito -> Bool
 esSerie (Serie _ _) = True
 esSerie _ = False
 
-{--
-esProlijoSerie ::  (Bool, Bool) -> (Bool, Bool) -> (Bool, Bool)
-esProlijoSerie (prolijidadIzq, _) (prolijidadDer, esSerieDer) = (prolijidadIzq && prolijidadDer && not esSerieDer, True)
---}
-
 esProlijoSerie ::  Circuito -> Bool -> Circuito -> Bool -> Bool
 esProlijoSerie _ resIzq ramaDer resDer = resIzq && resDer && not (esSerie ramaDer)
 
@@ -147,8 +140,8 @@ esCaja _ = False
 resistenciaCircuito :: Circuito -> Float
 resistenciaCircuito (Caja Nada) = 0
 resistenciaCircuito (Caja (Bombilla b)) = if b then 1 else -1
-resistenciaCircuito (Serie cIzq cDer) = resistenciaCircuito cIzq + resistenciaCircuito cDer
-resistenciaCircuito (Paralelo cEnt cIzq cDer cSal) = resistenciaCircuito (Caja cEnt) + resistenciaCircuito cIzq + resistenciaCircuito cDer + resistenciaCircuito (Caja cSal)
+resistenciaCircuito (Serie circIzq circDer) = resistenciaCircuito circIzq + resistenciaCircuito circDer
+resistenciaCircuito (Paralelo cEnt circIzq circDer cSal) = resistenciaCircuito (Caja cEnt) + resistenciaCircuito circIzq + resistenciaCircuito circDer + resistenciaCircuito (Caja cSal)
 
 subCircuitoMásResistente :: Circuito -> Circuito
 subCircuitoMásResistente = recCircuito Caja resSerie resParalelo
@@ -158,8 +151,8 @@ resSerie ramaIzq subRamaIzq ramaDer subRamaDer =
   elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Serie ramaIzq ramaDer) 
 
 resParalelo :: Caja -> Circuito -> Circuito -> Circuito -> Circuito -> Caja -> Circuito
-resParalelo caEnt ramaIzq subRamaIzq ramaDer subRamaDer caSal = 
-  elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Paralelo caEnt ramaIzq ramaDer caSal) 
+resParalelo cEnt ramaIzq subRamaIzq ramaDer subRamaDer cSal = 
+  elDeMayorResistencia (elDeMayorResistencia subRamaIzq subRamaDer) (Paralelo cEnt ramaIzq ramaDer cSal) 
 
 elDeMayorResistencia :: Circuito -> Circuito -> Circuito
 elDeMayorResistencia c1 c2 = if resistenciaCircuito c1 >= resistenciaCircuito c2 then c1 else c2
